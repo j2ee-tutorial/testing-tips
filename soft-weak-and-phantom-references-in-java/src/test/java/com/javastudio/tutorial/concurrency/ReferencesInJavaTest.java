@@ -4,13 +4,14 @@ import com.antkorwin.commonutils.gc.GcUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
 class ReferencesInJavaTest {
 
     @Test
-    void testStrongReference() {
+    void testStrong() {
         Foo firstReference = new Foo();
         Foo secondReference = firstReference;
 
@@ -46,5 +47,21 @@ class ReferencesInJavaTest {
 
         // Asserts
         Assertions.assertThat(map).isEmpty();
+    }
+
+    @Test
+    void testSoftAfterTryingToAllocateAllAvailableMemory() {
+        // Arrange
+        String instance = new String("Sample");
+        SoftReference<String> softReference = new SoftReference<>(instance);
+        instance = null;
+        Assertions.assertThat(softReference).isNotNull();
+        Assertions.assertThat(softReference.get()).isNotNull();
+
+        // Act
+        GcUtils.tryToAllocateAllAvailableMemory();
+
+        // Asserts
+        Assertions.assertThat(softReference.get()).isNull();
     }
 }
