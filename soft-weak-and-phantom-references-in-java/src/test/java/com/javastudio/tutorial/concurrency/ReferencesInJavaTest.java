@@ -1,9 +1,11 @@
 package com.javastudio.tutorial.concurrency;
 
+import com.antkorwin.commonutils.gc.GcUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 class ReferencesInJavaTest {
 
@@ -18,7 +20,7 @@ class ReferencesInJavaTest {
     }
 
     @Test
-    void testWeakReference() {
+    void testWeakAfterGC() {
         // Arrange
         String instance = new String("123");
         WeakReference<String> reference = new WeakReference<>(instance);
@@ -31,4 +33,18 @@ class ReferencesInJavaTest {
         Assertions.assertThat(reference.get()).isNull();
     }
 
+    @Test
+    void testWeakMap() throws InterruptedException {
+        // Arrange
+        WeakHashMap<String, Boolean> map = new WeakHashMap<>();
+        String instance = new String("123");
+        map.put(instance, true);
+
+        // Act
+        instance = null;
+        GcUtils.fullFinalization();
+
+        // Asserts
+        Assertions.assertThat(map).isEmpty();
+    }
 }
